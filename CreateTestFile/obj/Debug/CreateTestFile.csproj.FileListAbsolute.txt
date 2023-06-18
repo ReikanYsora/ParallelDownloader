@@ -1,0 +1,8 @@
+C:\Users\jcrem\source\repos\FastDownloader\CreateTestFile\bin\Debug\CreateTestFile.exe.config
+C:\Users\jcrem\source\repos\FastDownloader\CreateTestFile\bin\Debug\CreateTestFile.exe
+C:\Users\jcrem\source\repos\FastDownloader\CreateTestFile\bin\Debug\CreateTestFile.pdb
+C:\Users\jcrem\source\repos\FastDownloader\CreateTestFile\obj\Debug\CreateTestFile.csproj.AssemblyReference.cache
+C:\Users\jcrem\source\repos\FastDownloader\CreateTestFile\obj\Debug\CreateTestFile.csproj.SuggestedBindingRedirects.cache
+C:\Users\jcrem\source\repos\FastDownloader\CreateTestFile\obj\Debug\CreateTestFile.csproj.CoreCompileInputs.cache
+C:\Users\jcrem\source\repos\FastDownloader\CreateTestFile\obj\Debug\CreateTestFile.exe
+C:\Users\jcrem\source\repos\FastDownloader\CreateTestFile\obj\Debug\CreateTestFile.pdb

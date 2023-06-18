@@ -5,6 +5,8 @@ VisualStudioVersion = 17.6.33801.468
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastDownloader", "FastDownloader\FastDownloader.csproj", "{CDFCDD26-6939-48B8-AD6F-D4CEDB6EF9B4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateTestFile", "CreateTestFile\CreateTestFile.csproj", "{38B6B940-1F30-4E36-9204-49AEEC088E40}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{CDFCDD26-6939-48B8-AD6F-D4CEDB6EF9B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CDFCDD26-6939-48B8-AD6F-D4CEDB6EF9B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDFCDD26-6939-48B8-AD6F-D4CEDB6EF9B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38B6B940-1F30-4E36-9204-49AEEC088E40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38B6B940-1F30-4E36-9204-49AEEC088E40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38B6B940-1F30-4E36-9204-49AEEC088E40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38B6B940-1F30-4E36-9204-49AEEC088E40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -6,3 +6,11 @@ C:\Users\jcrem\source\repos\FastDownloader\FastDownloader\obj\Debug\FastDownload
 C:\Users\jcrem\source\repos\FastDownloader\FastDownloader\obj\Debug\FastDownloader.csproj.CoreCompileInputs.cache
 C:\Users\jcrem\source\repos\FastDownloader\FastDownloader\obj\Debug\FastDownloader.exe
 C:\Users\jcrem\source\repos\FastDownloader\FastDownloader\obj\Debug\FastDownloader.pdb
+C:\Users\jcrem\Documents\Git\Repositories\ParallelDownloader\FastDownloader\bin\Debug\FastDownloader.exe.config
+C:\Users\jcrem\Documents\Git\Repositories\ParallelDownloader\FastDownloader\bin\Debug\FastDownloader.exe
+C:\Users\jcrem\Documents\Git\Repositories\ParallelDownloader\FastDownloader\bin\Debug\FastDownloader.pdb
+C:\Users\jcrem\Documents\Git\Repositories\ParallelDownloader\FastDownloader\obj\Debug\FastDownloader.csproj.AssemblyReference.cache
+C:\Users\jcrem\Documents\Git\Repositories\ParallelDownloader\FastDownloader\obj\Debug\FastDownloader.csproj.SuggestedBindingRedirects.cache
+C:\Users\jcrem\Documents\Git\Repositories\ParallelDownloader\FastDownloader\obj\Debug\FastDownloader.csproj.CoreCompileInputs.cache
+C:\Users\jcrem\Documents\Git\Repositories\ParallelDownloader\FastDownloader\obj\Debug\FastDownloader.exe
+C:\Users\jcrem\Documents\Git\Repositories\ParallelDownloader\FastDownloader\obj\Debug\FastDownloader.pdb

@@ -1,118 +1,144 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
 public class ParallelDownloader
 {
+    #region EVENTS
     public event Action DownloadStarted;
     public event Action<string> DownloadCompleted;
     public event Action<string> DownloadFailed;
-    public event Action<int> DownloadProgressChanged;
+    public event Action<float> DownloadProgressChanged;
+    #endregion
 
-    public async Task DownloadAsync(string url, string destinationPath, int maxParallelDownloads)
+    #region ATTRIBUTES
+    private int _defaultChunkCount = 1;
+    #endregion
+
+    #region PROPERTIES
+    public WebProxy WebProxy { get; set; }
+
+    public int Chunks
+    {
+        set
+        {
+            if (value != _defaultChunkCount)
+            {
+                _defaultChunkCount = value;
+            }
+        }
+        get
+        {
+            return _defaultChunkCount;
+        }
+    }
+    #endregion
+
+    #region METHODS
+    public void Download(string url, string destinationPath)
     {
         try
         {
+            long totalBytes = 0;
+            int fixChunksCount = Chunks;
+
             DownloadStarted?.Invoke();
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+
+            if (WebProxy != null)
+            {
+                request.Proxy = WebProxy;
+            }
+
             request.Method = "HEAD";
 
-            long totalBytes = 0;
-
-            using (HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync())
+            using (HttpWebResponse response = (HttpWebResponse) request.GetResponse())
             {
                 totalBytes = response.ContentLength;
             }
 
             if (totalBytes <= 0)
             {
-                throw new Exception("Impossible de récupérer la taille du fichier.");
+                throw new Exception("Unable to retrieve file size");
             }
 
             DownloadProgressChanged?.Invoke(0);
 
-            int chunkSize = (int)Math.Ceiling((double)totalBytes / maxParallelDownloads);
-
+            int chunkSize = (int)Math.Ceiling((double)totalBytes / fixChunksCount);
             string tempDirectory = Path.GetDirectoryName(destinationPath);
-
             long totalDownloadedBytes = 0;
+            bool downloadFailed = false;
+            ConcurrentBag<string> tempFiles = new ConcurrentBag<string>();
 
-            object lockObject = new object();
-
-            List<Task> downloadTasks = new List<Task>();
-
-            for (int chunkIndex = 0; chunkIndex < maxParallelDownloads; chunkIndex++)
+            Parallel.For(0, fixChunksCount, chunkIndex =>
             {
                 int startRange = chunkIndex * chunkSize;
                 int endRange = startRange + chunkSize - 1;
-
                 string tempFilePath = Path.Combine(tempDirectory, $"{Path.GetRandomFileName()}.part");
 
-                downloadTasks.Add(Task.Run(async () =>
+                try
                 {
-                    try
+                    HttpWebRequest partRequest = (HttpWebRequest)WebRequest.Create(url);
+                    partRequest.Method = "GET";
+
+                    if (WebProxy != null)
                     {
-                        long chunkDownloadedBytes = 0;
+                        partRequest.Proxy = WebProxy;
+                    }
 
-                        HttpWebRequest rangeRequest = (HttpWebRequest)WebRequest.Create(url);
-                        rangeRequest.Method = "GET";
-                        rangeRequest.AddRange(startRange, endRange);
+                    partRequest.AddRange(startRange, endRange);
 
-                        using (HttpWebResponse rangeResponse = (HttpWebResponse)await rangeRequest.GetResponseAsync())
-                        using (Stream responseStream = rangeResponse.GetResponseStream())
-                        using (FileStream fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write))
+                    using (HttpWebResponse rangeResponse = (HttpWebResponse)partRequest.GetResponse())
+                    using (Stream responseStream = rangeResponse.GetResponseStream())
+                    using (FileStream fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write))
+                    {
+                        byte[] buffer = new byte[10240];
+                        int bytesRead;
+
+                        while ((bytesRead = responseStream.Read(buffer, 0, buffer.Length)) > 0)
                         {
-                            byte[] buffer = new byte[4096];
-                            int bytesRead;
-
-                            while ((bytesRead = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                            {
-                                fileStream.Write(buffer, 0, bytesRead);
-                                chunkDownloadedBytes += bytesRead;
-
-                                lock (lockObject)
-                                {
-                                    totalDownloadedBytes += bytesRead;
-                                    int progress = (int)((totalDownloadedBytes * 100) / totalBytes);
-                                    OnDownloadProgressChanged(progress);
-                                }
-                            }
+                            totalDownloadedBytes += bytesRead;
+                            float progress = totalDownloadedBytes / (float)totalBytes;
+                            OnDownloadProgressChanged(progress);
+                            fileStream.Write(buffer, 0, bytesRead);
                         }
                     }
-                    catch (Exception ex)
+                }
+                catch (Exception ex)
+                {
+                    downloadFailed = true;
+                    DownloadFailed?.Invoke(ex.Message);
+                }
+                finally
+                {
+                    if (!downloadFailed)
                     {
-                        DownloadFailed?.Invoke(ex.Message);
+                        tempFiles.Add(tempFilePath);
                     }
-                }));
+                }
+            });
+
+            if (!downloadFailed)
+            {
+                MergeTempFiles(tempFiles.ToList(), destinationPath);
+                DownloadCompleted?.Invoke(destinationPath);
             }
-
-            await Task.WhenAll(downloadTasks);
-
-            MergeTempFiles(tempDirectory, destinationPath);
-
-            DownloadCompleted?.Invoke(destinationPath);
         }
         catch (Exception ex)
         {
-            DownloadFailed?.Invoke(ex.Message);
+            DownloadFailed?.Invoke(ex.GetBaseException().Message);
         }
     }
 
-    private void OnDownloadProgressChanged(int progress)
-    {
-        DownloadProgressChanged?.Invoke(progress);
-    }
-
-    private void MergeTempFiles(string tempDirectory, string destinationPath)
+    private void MergeTempFiles(List<string> tempFiles, string destinationPath)
     {
         using (FileStream destinationStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write))
         {
-            string[] tempFiles = Directory.GetFiles(tempDirectory, "*.part", SearchOption.TopDirectoryOnly);
-            Array.Sort(tempFiles);
-
             foreach (string tempFilePath in tempFiles)
             {
                 using (FileStream tempFileStream = new FileStream(tempFilePath, FileMode.Open, FileAccess.Read))
@@ -123,9 +149,17 @@ public class ParallelDownloader
         }
 
         // Supprimer les fichiers temporaires
-        foreach (string tempFilePath in Directory.GetFiles(tempDirectory, "*.part", SearchOption.TopDirectoryOnly))
+        foreach (string tempFilePath in tempFiles)
         {
             File.Delete(tempFilePath);
         }
     }
+    #endregion
+
+    #region CALLBACKS
+    private void OnDownloadProgressChanged(float progress)
+    {
+        DownloadProgressChanged?.Invoke(progress);
+    }
+    #endregion
 }
